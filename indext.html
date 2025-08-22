@@ -3,531 +3,176 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Telc Sınav Sonuçları</title>
+  <title>sonuçları yükle</title>
   <style>
-    :root{
-      --bg:#0b1020; --card:#141a33; --muted:#93a0c7; --txt:#eaf0ff; --acc:#5b7bff; --ok:#22c55e; --bad:#ef4444; --warn:#f59e0b;
-      --br:16px;
-    }
-    *{box-sizing:border-box}
+    :root{--txt:#0b0b0b}
     html,body{height:100%}
-    body{margin:0;background:linear-gradient(180deg,#0a0f1f,#0b1120 30%,#0e1326);color:var(--txt);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif}
-    a{color:var(--acc)}
-    .container{max-width:1200px;margin-inline:auto;padding:16px}
-    header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .logo{font-weight:800;letter-spacing:.3px;display:flex;align-items:center;gap:10px}
-    .logo img{height:36px;width:auto;border-radius:8px;cursor:pointer}
-    .badge{background:rgba(91,123,255,.12);border:1px solid rgba(91,123,255,.4);padding:4px 8px;border-radius:999px;color:#cfe0ff;font-size:12px}
-
-    .grid{display:grid;grid-template-columns:2fr 1fr;gap:16px}
-    @media (max-width:980px){.grid{grid-template-columns:1fr}}
-
-    .card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,0));border:1px solid rgba(255,255,255,.08);border-radius:var(--br);box-shadow:0 10px 30px rgba(0,0,0,.25)}
-    .card h3{margin:0 0 8px 0;font-size:18px}
-    .card .body{padding:14px}
-
-    .filters{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
-    .filters input[type="text"], .filters input[type="date"], .filters select{
-      background:#0e1530;border:1px solid rgba(255,255,255,.12); color:var(--txt);
-      padding:10px 12px; border-radius:10px; outline:none; min-width:170px
-    }
-    .filters .file{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-    button{cursor:pointer;background:var(--acc);border:none;color:white;padding:10px 14px;border-radius:10px;font-weight:600}
-    button.secondary{background:#1f2a4d}
-
-    table{width:100%;border-collapse:separate;border-spacing:0 8px}
-    thead th{font-size:12px;color:var(--muted);text-align:left;padding:0 10px}
-    tbody tr{background:rgba(20,26,51,.75);border:1px solid rgba(255,255,255,.06)}
-    tbody td{padding:12px 10px;vertical-align:middle}
-    tbody tr{border-radius:12px}
-    tbody tr td:first-child{border-top-left-radius:12px;border-bottom-left-radius:12px}
-    tbody tr td:last-child{border-top-right-radius:12px;border-bottom-right-radius:12px}
-    .tag{padding:4px 8px;border-radius:999px;font-size:12px}
-    .tag.ok{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.5);color:#bff3cd}
-    .tag.bad{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.5);color:#ffc7c7}
-    .tag.neutral{background:rgba(148,163,184,.12);border:1px solid rgba(148,163,184,.45);color:#cfd5e1}
-
-    .details{display:none;padding:10px 0 0 0;color:#cfd5ff}
-    .details .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    @media (max-width:560px){.details .grid2{grid-template-columns:1fr}}
-    .kv{display:flex;justify-content:space-between;background:#0e1530;padding:10px;border-radius:10px;border:1px solid rgba(255,255,255,.06)}
-
-    #smsPanel .body{display:flex;flex-direction:column;gap:8px}
-    #smsText{width:100%;min-height:160px;background:#0e1530;color:var(--txt);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:12px}
-    .muted{color:var(--muted);font-size:12px}
-    .empty{border:1px dashed rgba(255,255,255,.2);border-radius:12px;padding:20px;text-align:center;color:#cfd5e1}
+    body{margin:0;font:20px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;color:var(--txt)}
+    .wrap{min-height:100%;display:flex;flex-direction:column;gap:18px;padding:clamp(20px,4vw,48px)}
+    h1{font-size:clamp(36px,6vw,60px);font-weight:800;margin:0}
+    .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+    input[type="text"]{font-size:clamp(18px,3.8vw,24px);padding:10px 14px;border:3px solid #000;border-radius:8px;max-width:360px;width:100%}
+    .btn{display:inline-block;padding:12px 28px;border:4px solid #000;border-radius:10px;background:#fff;color:#000;font-size:clamp(28px,6vw,44px);font-weight:700;line-height:1;cursor:pointer}
+    .hint{font-size:14px;color:#555}
   </style>
 </head>
 <body>
-  <div class="container">
-    <header>
-      <div>
-        <div class="logo"><img id="secretLogo" alt="logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAARkAAACzCAMAAACKPpgZAAAAkFBMVEWuFhP///+vGxiqAACsAACwHhvlv7778/L99/aoAACtEg/v1tStDQj79PO6RUOxIBrMgH7z397sz8336unPh4W5QD3TkY/nw8Ly3t3it7W8TEn25+bOg4G0Kyfbp6XKenfWmpi1NDDGa2japKK3OzjIcm/CX1y/VVLEaGXer63qysm8S0fSjozcp6XAWFbCYV7+p+9iAAAJZUlEQVR4nO2d6ULqOhCAWxKgDRFlF5BNQI8cr77/292WtZlk2gRCj8J8P7W2ydc2nclmUA0IE5WAzJghMxhkBoPMYJAZDDKDQWYwyAwGmcEgMxhkBoPMYJAZDDKDQWYwyAwGmcEgMxhkBoPMYJAZDDKDQWYwyAwGmcEgMxgezQjOfJ3qJ+DLTKKFr2vcy7l+Bl7MJFrEbBCGIZnJkr5EL+1wC5k5Ink8+WyEB8jMAb7qP4cZrmOGA8RVrgK5yAz7CFWuYoYNo4cM0bicJ/MyM7VSzICrPJAZ5Cp1MoNchcxgVyEz2FXIDHYVMoNd5YeakZwxdigamTki415/OFz+4bvCXWZGCJkiikLaM8zsT1187hyczLDePkV6eGHCUGZrM4Injx5f9Jp/m72FSJ9CmXNVJzMifajF9tTN1aKyfcTlOYJczLD1qXiDNHsxmZEAQ6E441/LTSc6VrUx7K4Yw+Q4mEm0VNbTRidz8Hjz0f2bXNFZjoMZ/pYtXy02mpFNwAoUKSn89yAKNTofo9hcZWszkgVqgnuiMYflKMTejOAPysXW3GSGwUo/q12gnD91QoTWmpn6Sy3NCNaDxQHFdcPeDP8E9WBGMw/gR41sZQV7G+eUPmyNmH5r7czwIM9LGI5yWrILzbAGuNZKupqRfJhb+oSprsbGjIifCk5cudrbJDh8T564oxm+yH1g9sdLeHMtzEie/8CEYeTcBNubqcKLfTqa4T1Dw6vTqQA1xWaYKFTecR7xsTcjYb1e3Mzwpo2XtBLg9haakdV64Ukb1zMTMHhfRk7tjJxYPTG7P1HUFJkREv3anahd08wUFlA4mBGa2Bz+U6pRZIYhMYzC9IpmxKN6rb5dPLM3o3Wm5/KerXyBGbszd53TUIcYmCkBzTh55E1mOpFKe2tGjZ/3Nax9/nl/f5t9tLRfjbN3ON8M/0ZtPNQfjvfJOdBzy5syd6dTlea8CQ4ObUskmNYUNP4kqR6XMskt4+YG/naWqUiuGcHNrW/tqbfrL2nOpqn5nmug55hrPx3uQW2bHFvn2ryrVT2bJMn4Ffw6+33KNcOWBi1Rnx8SbJF2KE3m9cdrZpRpDWV3M+40ps3d18PaDGyXox5oEFkPnCnz9OeZEdIgZiNAIC2Y87vk3KeXZMpxfOwwsDXDYei+0g6EDVEm/sgzY3pk5rGX4d1S+oEZaGPXhk8oDAomx+rlmNFTluSbGZ9foSxlmJEg+m2byg4r2T+eK8cMn2lihp7ElGKG/aceZf5OgBfj9DrlmGFtKAamFudTihk1/EVSGLkA5zpUETcDg8+EP94GFkowIybqQU9I4WM15nnDxm5OZvg6BLgnjiglmIFfJiy0YGq31rLYDNM6wl79jUWVYAaUf4zdVv6iHNc+HJdjBmapkcd5t2WYUbtJB1jp2ZdyXKfQjODwkRn+MjPq53ieRIpGYtAeVYX5KkczEgbOSrp1Kdc3IyrqMeMGinpgE4m0j2b0aGbhcXLj9c3IESy/JYfUCTfTB38R+ZwLcH0z/M+ZZj6LzGh9Vs8+Fz6UYOYlPI9DByVuBl6+/cvMwGfelmGhmQH4C/Szdw4lmJmfaWZQaAZ2BboPEOTwg820nZ+ZezHTuPm36dx25vnmW+CiWQoYrUIz8Kvd+mVmwIBQZEvh22SI9H5XDAz6OvtMG5JCKMqbfnt2AAc+hkxYglzllFFqsyvcRyJxysi11VFE5263G+6FAN3Yro1BTs8VHBOu+xo4CMoxA0aSXDuxc8zAgCb8+rG9nabHgYNBa9d4LKeHXBsu9xjrlWBGaw4mbvMScDNyBc2cMecBw6+ZlXmMDTQ0NbfWIGckLtYmchnHP8/iMjNwVMPcD6tFwW8FrYHglnOuDDlZ19f7dJEZDmcimL+a2lSOqJpX/MTL0nJmERzXTBl5aoQvMwMm3GPhufZsdSpo8QXjn5Eyjpk7S0SbrRWG7ybt4rpzriD6HLll9jU/WoLjt0ntmoYFBsF2uck8nYVkbeZdNxO+xFCDZPz9eusODOjzysPXw7QewVn1NAVGX28w15YcCcbi0d6CrZkg1mZDJDSa8enkMp0IOK2jQ6MYl+2YYZjkO33cjbRNXsanKTBC6MWP+o9JbrlPkdLZdPxreoxprc3oo3E7Ny+L/fgeX82GaXpSthnTXNzWoDZopIXpZz4ixk6axvx7krS3XFZ7s2U7O5RpbUaLsI88NAa12mZ8OGu9ZDOm1/zIvKCp3BE9GKbd25sR3GJufXjGPhsX7syjh1oZlpnbZFsBZzPGL7cJ13W4F5oxTJQ7ocz1d1iR4WZGy8sQJuWayV0OocZ9fOWgxsVMwPJuz5GF42f7UjOGpO4ISHx51f6FcjKjLJdGaZZsJu+GbcDnQHKtP8WPmYB9FT+PrktML981jqHjSdrwj4hnlm/U2s1MwANTxKfg2mHmYadB9Kkx9PhyabMaafPXYX3TjkR6wZJB1/lYPvZgZD1zM2yaziLYpMBN9LFSN0KwXMnOeT/XjevaLy+7U0q21ldvYetdk2R6tsFeqnrtlcMNImz3RksytTUaT4bP3//CTLoJxmiqyhkP+ljPY7r76feyDe5w1Bp2e6atLUTlUQUPTBKrrx/PUPt4s/x2X8jjbRdcyVgwmnX78/5nd/a2kvk7p2z3Qqk2X5+SP5j3u0+vowlH/wIZoUNPzBdfs+15k5K8jhbpT84Y1vW5c3KSMR+w2vElczy/aBMdeF7BPZyY9pTGIDMYZAaDzGCQGQwyg0FmMMgMBpnBIDMYZAaDzGCQGQwyg0FmMMgMBpnBIDMYZAaDzGBUAtfZE/dCJfjyNh/9tqgEPldL3RKVoE9mjFQCn+vIbolK4HUDjhuiEnhdyntDVILQeUb+fZCYWVITbCIx0/K4YPWGSMwga/zundTMkr5OBlIzzss47oLUjNcN+m6GrRmv+7bcClszXvfguBV2ZvztxHw77MyEc3qfIHszFNNoHMy0zOun75iDmXBKOYLK0Uw4o6ZG4WRG/adJRMaM4b+d3DNZM6Qmi2LGvEHJnaKaCdd+/sPPLQDMhFP0nznfG9BM+LygmG+LZma7Z86/LtVPwGAm7KzJjdnM7n+A33t7YzYThvX5IrZbJ3qrYGbStng+2i7ovVM/OWYSoudhfz2aVCt3SPV/1jJ/S4epvnAAAAAASUVORK5CYII=" /><span>Telc Sınav Sonuçları</span></div>
-      </div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center" id="authBox">
-        <input id="email" type="email" placeholder="E-posta" style="background:#0e1530;border:1px solid rgba(255,255,255,.12);color:var(--txt);padding:8px 10px;border-radius:10px;min-width:180px" />
-        <input id="pass" type="password" placeholder="Şifre" style="background:#0e1530;border:1px solid rgba(255,255,255,.12);color:var(--txt);padding:8px 10px;border-radius:10px;min-width:140px" />
-        <button id="loginBtn">Giriş</button>
-        <button id="logoutBtn" class="secondary" style="display:none">Çıkış</button>
-        <span class="badge" id="authState">Çevrimdışı</span>
-      </div>
-      <!-- Gizli yönetim paneli (modal) -->
-      <dialog id="adminDlg" style="background:#101737;border:1px solid rgba(255,255,255,.15);border-radius:14px;max-width:720px;width:92%">
-        <form method="dialog" style="margin:0;padding:16px;display:flex;flex-direction:column;gap:12px">
-          <h3 style="margin:0">Yönetim • XML Yükleme</h3>
-          <div id="adminGate">
-            <input id="pin" type="password" placeholder="Şifre" style="background:#0e1530;border:1px solid rgba(255,255,255,.12);color:#eaf0ff;padding:10px;border-radius:10px" />
-            <div class="muted">Şifre: 112</div>
-            <div style="display:flex;gap:8px;margin-top:8px"><button id="pinOk">Giriş</button><button value="cancel" class="secondary">Kapat</button></div>
-          </div>
-          <div id="adminBody" style="display:none">
-            <div class="muted">Buluta yükle (Firebase) veya bu cihazda sakla.</div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-              <input id="cloudFile" type="file" accept=".xml" />
-              <button id="uploadBtn">Buluta Yükle</button>
-              <button id="cloudListBtn" class="secondary">Buluttan Listele</button>
-              <button id="cloudLoadAllBtn" class="secondary">Buluttan Hepsini Yükle</button>
-            </div>
-            <hr style="border:none;border-top:1px solid rgba(255,255,255,.15)" />
-            <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-              <input id="localFile" type="file" accept=".xml" />
-              <button id="saveLocalBtn">Cihazda Sakla</button>
-              <button id="loadLocalBtn" class="secondary">Cihazdakileri Yükle</button>
-              <button id="clearLocalBtn" class="secondary">Cihazdakileri Sil</button>
-            </div>
-            <menu style="display:flex;gap:8px;justify-content:flex-end;margin:0;padding-top:8px"><button value="cancel" class="secondary">Kapat</button></menu>
-          </div>
-        </form>
-      </dialog>
-    </header>
-
-    <div class="grid">
-      <section class="card" id="listCard">
-        <div class="body">
-          <div class="filters">
-            <input id="q" type="text" placeholder="Ad, Soyad veya Belge No ara…" />
-            <input id="from" type="date" />
-            <input id="to" type="date" />
-            <select id="gradeFilter">
-              <option value="">Tüm notlar</option>
-              <option value="1">Not 1</option>
-              <option value="2">Not 2</option>
-              <option value="3">Not 3</option>
-              <option value="4">Not 4</option>
-              <option value="F">F (kaldı)</option>
-            </select>
-            <button class="secondary" id="clearBtn">Temizle</button>
-            <div class="file">
-              <input id="file" type="file" accept=".xml" />
-              <button id="cloudListBtn" title="Buluttaki XML'leri listele" class="secondary">Buluttan Listele</button>
-              <button id="cloudLoadAllBtn" title="Buluttaki tüm XML'leri yükle" class="secondary">Buluttan Hepsini Yükle</button>
-              <input id="cloudFile" type="file" accept=".xml" />
-              <button id="uploadBtn">Buluta Yükle</button>
-            </div>
-          </div>
-          </div>
-        </div>
-        <div class="body" style="padding-top:0">
-          <div class="muted" id="info">Durum: Henüz veri yüklenmedi.</div>
-          <div style="overflow:auto">
-            <table id="tbl">
-              <thead>
-                <tr>
-                  <th>Ad</th>
-                  <th>Soyad</th>
-                  <th>Belge No</th>
-                  <th>Tarih</th>
-                  <th>Dijital (Yazılı)</th>
-                  <th>Sözlü</th>
-                  <th>Toplam</th>
-                  <th>Not</th>
-                  <th>Aksiyon</th>
-                </tr>
-              </thead>
-              <tbody id="rows"></tbody>
-            </table>
-          </div>
-        </div>
-      </section>
-
-      <aside class="card" id="smsPanel">
-        <div class="body">
-          <h3>SMS Önizleme</h3>
-          <textarea id="smsText" placeholder="Listeden bir aday seçin…"></textarea>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button id="copyBtn">Kopyala</button>
-            <button class="secondary" id="clearSms">Temizle</button>
-          </div>
-        </div>
-      </aside>
+  <div class="wrap">
+    <h1>sonuçları yükle</h1>
+    <div class="row">
+      <input id="level" type="text" placeholder="Seviye (A1/A2/B1/B2/C1)" aria-label="Sınav seviyesi" />
+      <label for="file" class="btn">yükle</label>
+      <input id="file" type="file" accept=".xml" multiple hidden />
     </div>
+    <div id="status" class="hint"></div>
   </div>
 
 <script>
 (() => {
-  const MIN_WRITTEN = 135, MAX_WRITTEN = 225, MIN_SPOKEN = 45, MAX_SPOKEN = 75;
-
-  const els = {
-    q: document.getElementById('q'), from: document.getElementById('from'), to: document.getElementById('to'), grade: document.getElementById('gradeFilter'),
-    clearBtn: document.getElementById('clearBtn'), rows: document.getElementById('rows'), info: document.getElementById('info'),
-    file: document.getElementById('file'), loadDefault: document.getElementById('loadDefault'),
-    smsText: document.getElementById('smsText'), copyBtn: document.getElementById('copyBtn'), clearSms: document.getElementById('clearSms')
+  // ---- Kurallar (örneklerine göre) ----
+  const RULES = {
+    A1:{mode:'combined', total:{min:36, max:60}},
+    A2:{mode:'combined', total:{min:36, max:60}},
+    B1:{mode:'split',    written:{min:135,max:225}, spoken:{min:45,max:75}},
+    B2:{mode:'split',    written:{min:135,max:225}, spoken:{min:45,max:75}},
+    C1:{mode:'split',    written:{min:99, max:166}, spoken:{min:29,max:48}}, // Hochschule dahil
   };
 
-  let people = [];
+  const $ = s => document.querySelector(s);
+  const statusEl = $('#status'), levelInput = $('#level');
+  let curRules = RULES.B2;
 
-  const toTR = n => n == null || n === '' ? '' : Number(n).toLocaleString('tr-TR', {maximumFractionDigits:2});
-  const toISODate = d => d.toISOString().slice(0,10);
-  const fmtDate = s => { try { const d = new Date(s); return d.toLocaleDateString('tr-TR'); } catch { return s || '' } };
+  function normLevel(v){
+    const t=(v||'').toString().trim().toUpperCase('tr-TR');
+    if(t.includes('HOCH')) return 'C1';
+    return ['A1','A2','B1','B2','C1'].includes(t) ? t : '';
+  }
+  const rulesOf = lv => RULES[normLevel(lv)] || RULES.B2;
+
+  // --- Parsers/formatters ---
+  const toTR = n => n==null||n==='' ? '' : Number(n).toLocaleString('tr-TR',{maximumFractionDigits:2});
+  function P(s){ const t=String(s??'').replace(/\s/g,'').replace(',','.'); const n=parseFloat(t); return Number.isFinite(n)?n:null; }
+  function parseDate(s){
+    if(!s) return null;
+    const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(s);
+    if(m) return new Date(`${m[3]}-${m[2]}-${m[1]}T00:00:00`);
+    const d=new Date(s); return isNaN(d)? null : d;
+  }
+  const fmtDate = s => { const d=parseDate(s); return d? d.toLocaleDateString('tr-TR') : (s||''); };
   const up = s => (s||'').toLocaleUpperCase('tr-TR');
 
+  // --- XML -> adaylar ---
   function parseXML(text){
-    const doc = new DOMParser().parseFromString(text, 'text/xml');
-    const nodes = [...doc.getElementsByTagName('Table')];
-    return nodes.map(n => {
-      const g = tag => (n.getElementsByTagName(tag)[0]?.textContent ?? '').trim();
+    const doc = new DOMParser().parseFromString(text,'text/xml');
+    const rows = [...doc.getElementsByTagName('Table')];
+    return rows.map(r=>{
+      const g = t => (r.getElementsByTagName(t)[0]?.textContent ?? '').trim();
       return {
         Name: g('Name'), Vorname: g('Vorname'), Bogennummer: g('Bogennummer'), Note: g('Note'),
-        Pruefungsdatum: g('Pruefungsdatum'),
-        TeilS: [g('Teil1_schriftlich'), g('Teil2_schriftlich'), g('Teil3_schriftlich'), g('Teil4_schriftlich')].map(Number),
-        TeilM: [g('Teil1_muendlich'), g('Teil2_muendlich'), g('Teil3_muendlich'), g('Teil4_muendlich'), g('Teil5_muendlich')].map(Number),
-        GesamtS: Number(g('Gesamtergebnis_schriftlich')), GesamtM: Number(g('Gesamtergebnis_muendlich')), Gesamt: Number(g('Gesamtergebnis'))
-      }
+        Pruefungsdatum: g('Pruefungsdatum'), _rawDate: g('Pruefungsdatum'),
+        Geburtsdatum: g('Geburtsdatum')||g('Geburtstag')||'',
+        TeilS: [g('Teil1_schriftlich'),g('Teil2_schriftlich'),g('Teil3_schriftlich'),g('Teil4_schriftlich')].map(P),
+        TeilM: [g('Teil1_muendlich'),g('Teil2_muendlich'),g('Teil3_muendlich')].map(P),
+        GesamtS: P(g('Gesamtergebnis_schriftlich')),
+        GesamtM: P(g('Gesamtergebnis_muendlich')),
+        Gesamt : P(g('Gesamtergebnis')),
+      };
     });
   }
 
-  function render(){
-    const q = (els.q.value||'').trim().toLocaleLowerCase('tr-TR');
-    const from = els.from.value ? new Date(els.from.value) : null;
-    const to = els.to.value ? new Date(els.to.value) : null;
-    const grade = els.grade.value;
-
-    const rows = people.filter(p => {
-      const full = `${p.Vorname} ${p.Name} ${p.Bogennummer}`.toLocaleLowerCase('tr-TR');
-      if(q && !full.includes(q)) return false;
-      const d = p.Pruefungsdatum ? new Date(p.Pruefungsdatum) : null;
-      if(from && d && d < from) return false;
-      if(to && d && d > new Date(toISODate(new Date(to.getTime()+86400000)))) return false;
-      if(grade && p.Note !== grade) return false;
-      return true;
-    });
-
-    els.rows.innerHTML = '';
-    rows.forEach((p,idx) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><strong>${p.Vorname}</strong></td>
-        <td>${p.Name}</td>
-        <td class="muted">${p.Bogennummer||''}</td>
-        <td>${fmtDate(p.Pruefungsdatum)}</td>
-        <td><span class="tag ${p.GesamtS>=MIN_WRITTEN? 'ok':'bad'}">${toTR(p.GesamtS)}</span></td>
-        <td><span class="tag ${p.GesamtM>=MIN_SPOKEN? 'ok':'bad'}">${toTR(p.GesamtM)}</span></td>
-        <td>${toTR(p.Gesamt)}</td>
-        <td>${p.Note||''}</td>
-        <td>
-          <button data-idx="${idx}" class="smsBtn">SMS</button>
-          <button data-idx="${idx}" class="detBtn secondary">Detay</button>
-        </td>`;
-
-      const details = document.createElement('tr');
-      details.className = 'details-row';
-      details.innerHTML = `<td colspan="9">
-        <div class="details">
-          <div class="grid2">
-            <div>
-              ${p.TeilS.map((v,i)=>`<div class="kv"><span>Yazılı ${i+1}</span><strong>${toTR(v)}</strong></div>`).join('')}
-            </div>
-            <div>
-              ${p.TeilM.map((v,i)=>`<div class="kv"><span>Sözlü ${i+1}</span><strong>${toTR(v)}</strong></div>`).join('')}
-            </div>
-          </div>
-        </div>
-      </td>`;
-
-      els.rows.appendChild(tr);
-      els.rows.appendChild(details);
-    });
-
-    els.rows.querySelectorAll('.detBtn').forEach(btn=>{
-      btn.addEventListener('click', e=>{
-        const r = e.target.closest('tr');
-        const nxt = r.nextElementSibling?.querySelector('.details');
-        if(nxt){ nxt.style.display = nxt.style.display==='block' ? 'none':'block'; }
-      });
-    });
-
-    els.rows.querySelectorAll('.smsBtn').forEach(btn=>{
-      btn.addEventListener('click', e=>{
-        const p = rows[Number(e.target.dataset.idx)];
-        els.smsText.value = buildSMS(p);
-        els.smsText.scrollIntoView({behavior:'smooth',block:'nearest'});
-        els.smsText.select();
-      });
-    });
-
-    if(rows.length===0){
-      els.rows.innerHTML = `<tr><td colspan="9"><div class="empty">Kayıt bulunamadı.</div></td></tr>`
-    }
-  }
-
+  // --- SMS metni ---
   function buildSMS(p){
     const adSoyad = up(`${p.Vorname} ${p.Name}`.trim());
-    return `Sayın ${adSoyad} Kurumumuzda girdiğiniz sınav sonucunuz Telc tarafından kurumumuza iletildi. Yazılı Bölüm (Schriftlicher Teil) : ${toTR(p.GesamtS)} Puan ( Min. ${MIN_WRITTEN} / ${MAX_WRITTEN}) Sözlü Bölüm (Mündlischer Teil) : ${toTR(p.GesamtM)} Puan ( Min. ${MIN_SPOKEN} / ${MAX_SPOKEN}) Detaylı bilgi için kurumumuzla iletişime geçebilirsiniz.`;
-  }
-
-  els.q.addEventListener('input', render);
-  els.from.addEventListener('change', render);
-  els.to.addEventListener('change', render);
-  els.grade.addEventListener('change', render);
-  els.clearBtn.addEventListener('click', ()=>{
-    els.q.value=''; els.from.value=''; els.to.value=''; els.grade.value=''; render();
-  });
-
-  els.copyBtn.addEventListener('click', ()=>{
-    els.smsText.select(); document.execCommand('copy');
-  });
-  els.clearSms.addEventListener('click', ()=> els.smsText.value='');
-
-  async function loadFromURL(url){
-    try{
-      const res = await fetch(url, {cache:'no-cache'});
-      if(!res.ok) throw new Error(res.status+': '+res.statusText);
-      const text = await res.text();
-      people = parseXML(text);
-      els.info.textContent = `${people.length} kayıt yüklendi.`;
-      render();
-    }catch(err){
-      els.info.textContent = `Yüklenemedi (${err.message})`;
+    if (curRules.mode === 'combined'){ // A1/A2
+      const t = curRules.total || {};
+      const totalTxt = `${toTR(p.Gesamt)} ( Gereken minimum sertifika puanı: ${t.min} / ${t.max} )`;
+      return `Sayın ${adSoyad} Kurumumuzda girdiğiniz sınav sonucunuz Telc tarafından kurumumuza iletildi.  Toplam Puanınız : ${totalTxt} .Sertifikanız veya sınav sonuç belgeniz Almanya Telc Merkezinden kargoya verilmiştir. 1 hafta - 10 gün içerisinde bizlere ulaşacaktır. Belgeniz bizlere ulaşana kadar herhangi bir yazılı sonuç belgesi verilememektedir. Sertifikanız veya sınav sonuç belgeniz bizlere ulaştığında sizlere bilgilendirme yapılacaktır. Saygılarımızla..`;
+    } else { // B1/B2/C1
+      const w=curRules.written||{}, m=curRules.spoken||{};
+      const wTxt = `${toTR(p.GesamtS)} ( Min. ${w.min} / ${w.max} )`;
+      const mTxt = `${toTR(p.GesamtM)} ( Min. ${m.min} / ${m.max} )`;
+      return `Sayın ${adSoyad} Kurumumuzda girdiğiniz sınav sonucunuz Telc tarafından kurumumuza iletildi.     
+Yazılı Bölüm (Schriftlicher Teil) : ${wTxt} Sözlü Bölüm (Mündlischer Teil) : ${mTxt} .Sertifikanız veya sınav sonuç belgeniz Almanya Telc Merkezinden kargoya verilmiştir. 1 hafta - 10 gün içerisinde bizlere ulaşacaktır. Belgeniz bizlere ulaşana kadar herhangi bir yazılı sonuç belgesi verilememektedir. Sertifikanız veya sınav sonuç belgeniz bizlere ulaştığında sizlere bilgilendirme yapılacaktır. Saygılarımızla..`;
     }
   }
 
-  els.loadDefault.addEventListener('click', ()=> loadFromURL('./results.xml'));
-
-  els.file.addEventListener('change', async (e)=>{
-    const file = e.target.files?.[0];
-    if(!file) return;
-    const text = await file.text();
-    people = parseXML(text);
-    els.info.textContent = `${file.name} yüklendi (${people.length} kayıt)`;
-    render();
-  });
-
-  // ---- Yerel (IndexedDB) saklama ----
-  const DB = 'telc-db', STORE = 'xml';
-  function idb(){ return new Promise((res,rej)=>{ const r = indexedDB.open(DB,1); r.onupgradeneeded=e=> e.target.result.createObjectStore(STORE,{autoIncrement:true}); r.onsuccess=e=>res(e.target.result); r.onerror=e=>rej(e.target.error); }); }
-  async function saveLocal(file){ const db=await idb(); const tx=db.transaction(STORE,'readwrite'); tx.objectStore(STORE).add(await file.text()); return tx.complete; }
-  async function loadLocal(){ const db=await idb(); const tx=db.transaction(STORE,'readonly'); const store=tx.objectStore(STORE); const req=store.getAll(); return await new Promise(r=>{ req.onsuccess=()=>r(req.result||[]); }); }
-  async function clearLocal(){ const db=await idb(); const tx=db.transaction(STORE,'readwrite'); tx.objectStore(STORE).clear(); return tx.complete; }
-
-  document.getElementById('saveLocalBtn')?.addEventListener('click', async ()=>{ const f=document.getElementById('localFile').files?.[0]; if(!f){alert('XML seçin');return;} await saveLocal(f); alert('Cihazda saklandı'); });
-  document.getElementById('loadLocalBtn')?.addEventListener('click', async ()=>{ const all=await loadLocal(); let list=[]; for(const t of all){ list.push(...parseXML(t)); } people=list.sort((a,b)=> new Date(b.Pruefungsdatum)-new Date(a.Pruefungsdatum)); els.info.textContent=`Cihazdan ${people.length} kayıt yüklendi.`; render(); });
-  document.getElementById('clearLocalBtn')?.addEventListener('click', async ()=>{ await clearLocal(); alert('Cihazdaki veriler silindi'); });
-
-  loadFromURL('./results.xml');
-
-  // Gizli logo: çift dokunuşla yönetim
-  const logo = document.getElementById('secretLogo');
-  let tapCount=0, tapTimer=null;
-  const adminDlg = document.getElementById('adminDlg');
-  const pin = document.getElementById('pin');
-  const pinOk = document.getElementById('pinOk');
-  const adminBody = document.getElementById('adminBody');
-  const adminGate = document.getElementById('adminGate');
-
-  function openGate(){ adminDlg.showModal(); pin.value=''; adminBody.style.display='none'; adminGate.style.display='block'; }
-
-  logo?.addEventListener('click', ()=>{
-    tapCount++; if(tapTimer) clearTimeout(tapTimer);
-    tapTimer = setTimeout(()=>{ if(tapCount>=2) openGate(); tapCount=0; }, 400);
-  });
-  pinOk?.addEventListener('click', (e)=>{ e.preventDefault(); if(pin.value==='112'){ adminGate.style.display='none'; adminBody.style.display='block'; } else { alert('Yanlış şifre'); }});
-
-})();
-</script>
-<script>
-(() => {
-  const MIN_WRITTEN = 135, MAX_WRITTEN = 225, MIN_SPOKEN = 45, MAX_SPOKEN = 75;
-
-  const els = {
-    q: document.getElementById('q'), from: document.getElementById('from'), to: document.getElementById('to'), grade: document.getElementById('gradeFilter'),
-    clearBtn: document.getElementById('clearBtn'), rows: document.getElementById('rows'), info: document.getElementById('info'),
-    file: document.getElementById('file'),
-    cloudFile: document.getElementById('cloudFile'), uploadBtn: document.getElementById('uploadBtn'),
-    cloudListBtn: document.getElementById('cloudListBtn'), cloudLoadAllBtn: document.getElementById('cloudLoadAllBtn'),
-    smsText: document.getElementById('smsText'), copyBtn: document.getElementById('copyBtn'), clearSms: document.getElementById('clearSms'),
-    email: document.getElementById('email'), pass: document.getElementById('pass'), loginBtn: document.getElementById('loginBtn'), logoutBtn: document.getElementById('logoutBtn'), authState: document.getElementById('authState')
-  };
-
-  let people = [];
-
-  const toTR = n => n == null || n === '' ? '' : Number(n).toLocaleString('tr-TR', {maximumFractionDigits:2});
-  const toISODate = d => d.toISOString().slice(0,10);
-  const fmtDate = s => { try { const d = new Date(s); return d.toLocaleDateString('tr-TR'); } catch { return s || '' } };
-  const up = s => (s||'').toLocaleUpperCase('tr-TR');
-
-  function parseXML(text){
-    const doc = new DOMParser().parseFromString(text, 'text/xml');
-    const nodes = [...doc.getElementsByTagName('Table')];
-    return nodes.map(n => {
-      const g = tag => (n.getElementsByTagName(tag)[0]?.textContent ?? '').trim();
-      return {
-        Name: g('Name'), Vorname: g('Vorname'), Bogennummer: g('Bogennummer'), Note: g('Note'),
-        Pruefungsdatum: g('Pruefungsdatum'),
-        TeilS: [g('Teil1_schriftlich'), g('Teil2_schriftlich'), g('Teil3_schriftlich'), g('Teil4_schriftlich')].map(Number),
-        TeilM: [g('Teil1_muendlich'), g('Teil2_muendlich'), g('Teil3_muendlich'), g('Teil4_muendlich'), g('Teil5_muendlich')].map(Number),
-        GesamtS: Number(g('Gesamtergebnis_schriftlich')), GesamtM: Number(g('Gesamtergebnis_muendlich')), Gesamt: Number(g('Gesamtergebnis'))
-      }
-    });
-  }
-
-  function render(){
-    const q = (els.q.value||'').trim().toLocaleLowerCase('tr-TR');
-    const from = els.from.value ? new Date(els.from.value) : null;
-    const to = els.to.value ? new Date(els.to.value) : null;
-    const grade = els.grade.value;
-
-    const rows = people.filter(p => {
-      const full = `${p.Vorname} ${p.Name} ${p.Bogennummer}`.toLocaleLowerCase('tr-TR');
-      if(q && !full.includes(q)) return false;
-      const d = p.Pruefungsdatum ? new Date(p.Pruefungsdatum) : null;
-      if(from && d && d < from) return false;
-      if(to && d && d > new Date(toISODate(new Date(to.getTime()+86400000)))) return false;
-      if(grade && p.Note !== grade) return false;
-      return true;
-    });
-
-    els.rows.innerHTML = '';
-    rows.forEach((p,idx) => {
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><strong>${p.Vorname}</strong></td>
-        <td>${p.Name}</td>
-        <td class="muted">${p.Bogennummer||''}</td>
-        <td>${fmtDate(p.Pruefungsdatum)}</td>
-        <td><span class="tag ${p.GesamtS>=MIN_WRITTEN? 'ok':'bad'}">${toTR(p.GesamtS)}</span></td>
-        <td><span class="tag ${p.GesamtM>=MIN_SPOKEN? 'ok':'bad'}">${toTR(p.GesamtM)}</span></td>
-        <td>${toTR(p.Gesamt)}</td>
-        <td>${p.Note||''}</td>
-        <td>
-          <button data-idx="${idx}" class="smsBtn">SMS</button>
-          <button data-idx="${idx}" class="detBtn secondary">Detay</button>
-        </td>`;
-
-      const details = document.createElement('tr');
-      details.className = 'details-row';
-      details.innerHTML = `<td colspan="9">
-        <div class="details">
-          <div class="grid2">
-            <div>
-              ${p.TeilS.map((v,i)=>`<div class="kv"><span>Yazılı ${i+1}</span><strong>${toTR(v)}</strong></div>`).join('')}
-            </div>
-            <div>
-              ${p.TeilM.map((v,i)=>`<div class="kv"><span>Sözlü ${i+1}</span><strong>${toTR(v)}</strong></div>`).join('')}
-            </div>
-          </div>
-        </div>
-      </td>`;
-
-      els.rows.appendChild(tr);
-      els.rows.appendChild(details);
-    });
-
-    els.rows.querySelectorAll('.detBtn').forEach(btn=>{
-      btn.addEventListener('click', e=>{
-        const r = e.target.closest('tr');
-        const nxt = r.nextElementSibling?.querySelector('.details');
-        if(nxt){ nxt.style.display = nxt.style.display==='block' ? 'none':'block'; }
-      });
-    });
-
-    els.rows.querySelectorAll('.smsBtn').forEach(btn=>{
-      btn.addEventListener('click', e=>{
-        const p = rows[Number(e.target.dataset.idx)];
-        els.smsText.value = buildSMS(p);
-        els.smsText.scrollIntoView({behavior:'smooth',block:'nearest'});
-        els.smsText.select();
-      });
-    });
-
-    if(rows.length===0){
-      els.rows.innerHTML = `<tr><td colspan="9"><div class="empty">Kayıt bulunamadı.</div></td></tr>`
+  // --- TXT blok ---
+  function personBlock(p){
+    const L=[];
+    L.push(`${(p.Vorname||'').trim()} ${(p.Name||'').trim()}`.trim().toUpperCase());
+    L.push(`Katılımcı NO: ${p.Bogennummer||''}`);
+    L.push(`Doğum tarihi: ${fmtDate(p.Geburtsdatum)}`);
+    if (curRules.mode === 'combined'){ // A1/A2
+      const t=curRules.total||{};
+      L.push(`Toplam Puanınız: ${toTR(p.Gesamt)} ( Gereken minimum sertifika puanı: ${t.min} / ${t.max} )`);
+    } else { // B1/B2/C1
+      const w=curRules.written||{}, m=curRules.spoken||{};
+      L.push(`Yazılı sınav: ${toTR(p.GesamtS)} / ${w.max} (Min ${w.min})`);
+      L.push(`Sözlü: ${toTR(p.GesamtM)} / ${m.max} (Min ${m.min})`);
     }
+    L.push('');
+    L.push('Detay puanlama');
+    const schrift = [
+      ['Leseverstehen (Okuma Anlama)', p.TeilS?.[0]],
+      ['Sprachbausteine (Dil Bilgisi)', p.TeilS?.[1]],
+      ['Hörverstehen (Dinleme Anlama)', p.TeilS?.[2]],
+      ['Schriftlicher Ausdruck (Yazılı İfade)', p.TeilS?.[3]],
+    ];
+    schrift.forEach(([lab,val])=>{ if(val!=null && !Number.isNaN(val)) L.push(`${lab}: ${toTR(val)}`); });
+    const muendlich = [
+      ['Sözlü Sınav 1. Kısım', p.TeilM?.[0]],
+      ['Sözlü Sınav 2. Kısım', p.TeilM?.[1]],
+      ['Sözlü Sınav 3. Kısım', p.TeilM?.[2]],
+    ];
+    muendlich.forEach(([lab,val])=>{ if(val!=null && !Number.isNaN(val)) L.push(`${lab}: ${toTR(val)}`); });
+    L.push('');
+    L.push('SMS:');
+    L.push(buildSMS(p));
+    return L.join('\n');
   }
 
-  function buildSMS(p){
-    const adSoyad = up(`${p.Vorname} ${p.Name}`.trim());
-    return `Sayın ${adSoyad} Kurumumuzda girdiğiniz sınav sonucunuz Telc tarafından kurumumuza iletildi. Yazılı Bölüm (Schriftlicher Teil) : ${toTR(p.GesamtS)} Puan ( Min. ${MIN_WRITTEN} / ${MAX_WRITTEN}) Sözlü Bölüm (Mündlischer Teil) : ${toTR(p.GesamtM)} Puan ( Min. ${MIN_SPOKEN} / ${MAX_SPOKEN}) Detaylı bilgi için kurumumuzla iletişime geçebilirsiniz.`;
+  // --- Dosya seçildiğinde ---
+  $('#file').addEventListener('change', async (e)=>{
+    const files=[...e.target.files];
+    const level = normLevel(levelInput.value);
+    if(!level){ alert('Önce seviye girin (A1/A2/B1/B2/C1)'); return; }
+    if(files.length===0){ statusEl.textContent='Dosya seçilmedi.'; return; }
+
+    curRules = rulesOf(level);
+
+    let dates=[], blocks=[];
+    for(const f of files){
+      const xml = await f.text();
+      const people = parseXML(xml);
+      people.forEach(p => { if(p._rawDate) dates.push(p._rawDate); blocks.push(personBlock(p)); });
+    }
+
+    // En güncel tarih
+    let last=null; dates.forEach(s=>{ const d=parseDate(s); if(d && (!last || d>last)) last=d; });
+    const lastText = last ? last.toLocaleDateString('tr-TR') : '';
+
+    const header = `SINAV TARİHİ: ${lastText}\nSINAV SEVİYESİ: ${level}\n\n`;
+    const content = header + blocks.join('\n\n__________________\n\n');
+
+    const rawName = `${lastText} Seviye ${level} Sınav sonucu.txt`;
+    const filename = rawName.replace(/[\\/:*?"<>|]/g,'-'); // dosya adı güvenli
+
+    downloadText(filename, content);
+    statusEl.textContent = `${files.length} XML işlendi • ${blocks.length} aday tek dosyada indirildi • Son sınav tarihi: ${lastText} • Seviye: ${level}`;
+
+    e.target.value=''; // tekrar seçim için
+  });
+
+  function downloadText(filename, content){
+    const blob = new Blob([content], {type:'text/plain;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 1200);
   }
-
-  els.q.addEventListener('input', render);
-  els.from.addEventListener('change', render);
-  els.to.addEventListener('change', render);
-  els.grade.addEventListener('change', render);
-  els.clearBtn.addEventListener('click', ()=>{
-    els.q.value=''; els.from.value=''; els.to.value=''; els.grade.value=''; render();
-  });
-
-  els.copyBtn.addEventListener('click', ()=>{
-    els.smsText.select(); document.execCommand('copy');
-  });
-  els.clearSms.addEventListener('click', ()=> els.smsText.value='');
-
-  els.file.addEventListener('change', async (e)=>{
-    const file = e.target.files?.[0];
-    if(!file) return;
-    const text = await file.text();
-    people = parseXML(text);
-    els.info.textContent = `${file.name} yüklendi (${people.length} kayıt)`;
-    render();
-  });
-
-  // ---- Firebase (isteğe bağlı bulut) ----
-  const firebaseConfig = { apiKey: "YOUR_API_KEY", authDomain: "YOUR_PROJECT.firebaseapp.com", projectId: "YOUR_PROJECT", storageBucket: "YOUR_PROJECT.appspot.com", appId: "YOUR_APP_ID" };
-  let app, storage;
-  async function initFirebase(){
-    try{
-      const [{ initializeApp }, { getStorage, ref, uploadBytes, getDownloadURL, listAll }] = await Promise.all([
-        import('https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js'),
-        import('https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js')
-      ]);
-      app = initializeApp(firebaseConfig);
-      storage = getStorage(app);
-      // Yükle
-      document.getElementById('uploadBtn').addEventListener('click', async ()=>{
-        const f = document.getElementById('cloudFile').files?.[0];
-        if(!f){ alert('XML seçin'); return; }
-        const { ref, uploadBytes } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js');
-        const path = `results/${new Date().toISOString().slice(0,10)}/${Date.now()}-${f.name}`;
-        await uploadBytes(ref(storage, path), f);
-        alert('Buluta yüklendi: '+path);
-      });
-      // Liste say
-      document.getElementById('cloudListBtn').addEventListener('click', async ()=>{
-        const { ref, listAll } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js');
-        const root = ref(storage, 'results');
-        const res = await listAll(root);
-        let items = 0;
-        for(const folder of res.prefixes){ const sub = await listAll(folder); items += sub.items.length; }
-        els.info.textContent = `Bulutta ${items} XML var.`;
-      });
-      // Hepsini yükle
-      document.getElementById('cloudLoadAllBtn').addEventListener('click', async ()=>{
-        const { ref, listAll, getDownloadURL } = await import('https://www.gstatic.com/firebasejs/10.12.2/firebase-storage.js');
-        const root = ref(storage, 'results');
-        const res = await listAll(root);
-        let items = [];
-        for(const folder of res.prefixes){ const sub = await listAll(folder); items = items.concat(sub.items); }
-        const all = [];
-        for(const it of items){ const url = await getDownloadURL(it); const txt = await fetch(url).then(r=>r.text()); all.push(...parseXML(txt)); }
-        people = all.sort((a,b)=> new Date(b.Pruefungsdatum) - new Date(a.Pruefungsdatum));
-        els.info.textContent = `Buluttan ${people.length} kayıt yüklendi.`;
-        render();
-      });
-    }catch(e){ console.warn('Firebase devre dışı (config girilmemiş olabilir).'); }
-  }
-  initFirebase();
-
-  // başlangıçta boş; yerel dosya seçilebilir
 })();
 </script>
 </body>
