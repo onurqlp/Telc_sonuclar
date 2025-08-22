@@ -28,151 +28,175 @@
   </div>
 
 <script>
-(() => {
-  // ---- Kurallar (örneklerine göre) ----
-  const RULES = {
-    A1:{mode:'combined', total:{min:36, max:60}},
-    A2:{mode:'combined', total:{min:36, max:60}},
-    B1:{mode:'split',    written:{min:135,max:225}, spoken:{min:45,max:75}},
-    B2:{mode:'split',    written:{min:135,max:225}, spoken:{min:45,max:75}},
-    C1:{mode:'split',    written:{min:99, max:166}, spoken:{min:29,max:48}}, // Hochschule dahil
-  };
+(()=>{
+// -------- Kurallar --------
+const RULES = {
+  A1:{mode:'combined', total:{min:36, max:60}},
+  A2:{mode:'combined', total:{min:36, max:60}},
+  B1:{mode:'split',    written:{min:135,max:225}, spoken:{min:45,max:75}},
+  B2:{mode:'split',    written:{min:135,max:225}, spoken:{min:45,max:75}},
+  C1:{mode:'split',    written:{min:99, max:166}, spoken:{min:29,max:48}}, // Hochschule dahil
+};
 
-  const $ = s => document.querySelector(s);
-  const statusEl = $('#status'), levelInput = $('#level');
-  let curRules = RULES.B2;
+const $ = s => document.querySelector(s);
+const statusEl = $('#status'), levelInput = $('#level');
+let curRules = RULES.B2;
 
-  function normLevel(v){
-    const t=(v||'').toString().trim().toUpperCase('tr-TR');
-    if(t.includes('HOCH')) return 'C1';
-    return ['A1','A2','B1','B2','C1'].includes(t) ? t : '';
-  }
-  const rulesOf = lv => RULES[normLevel(lv)] || RULES.B2;
+// Satır sonu (CRLF) – Not Defteri vb. için
+const NL = '\r\n';
 
-  // --- Parsers/formatters ---
-  const toTR = n => n==null||n==='' ? '' : Number(n).toLocaleString('tr-TR',{maximumFractionDigits:2});
-  function P(s){ const t=String(s??'').replace(/\s/g,'').replace(',','.'); const n=parseFloat(t); return Number.isFinite(n)?n:null; }
-  function parseDate(s){
-    if(!s) return null;
-    const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(s);
-    if(m) return new Date(`${m[3]}-${m[2]}-${m[1]}T00:00:00`);
-    const d=new Date(s); return isNaN(d)? null : d;
-  }
-  const fmtDate = s => { const d=parseDate(s); return d? d.toLocaleDateString('tr-TR') : (s||''); };
-  const up = s => (s||'').toLocaleUpperCase('tr-TR');
+function normLevel(v){
+  const t=(v||'').toString().trim().toUpperCase();
+  if(t.includes('HOCH')) return 'C1';
+  return ['A1','A2','B1','B2','C1'].includes(t) ? t : '';
+}
+const rulesOf = lv => RULES[normLevel(lv)] || RULES.B2;
 
-  // --- XML -> adaylar ---
-  function parseXML(text){
-    const doc = new DOMParser().parseFromString(text,'text/xml');
-    const rows = [...doc.getElementsByTagName('Table')];
-    return rows.map(r=>{
-      const g = t => (r.getElementsByTagName(t)[0]?.textContent ?? '').trim();
-      return {
-        Name: g('Name'), Vorname: g('Vorname'), Bogennummer: g('Bogennummer'), Note: g('Note'),
-        Pruefungsdatum: g('Pruefungsdatum'), _rawDate: g('Pruefungsdatum'),
-        Geburtsdatum: g('Geburtsdatum')||g('Geburtstag')||'',
-        TeilS: [g('Teil1_schriftlich'),g('Teil2_schriftlich'),g('Teil3_schriftlich'),g('Teil4_schriftlich')].map(P),
-        TeilM: [g('Teil1_muendlich'),g('Teil2_muendlich'),g('Teil3_muendlich')].map(P),
-        GesamtS: P(g('Gesamtergebnis_schriftlich')),
-        GesamtM: P(g('Gesamtergebnis_muendlich')),
-        Gesamt : P(g('Gesamtergebnis')),
-      };
-    });
-  }
+// -------- Yardımcılar --------
+const toTR = n => n==null||n==='' ? '' : Number(n).toLocaleString('tr-TR',{maximumFractionDigits:2});
+function P(s){ const t=String(s??'').replace(/\s/g,'').replace(',','.'); const n=parseFloat(t); return Number.isFinite(n)?n:null; }
+function parseDate(s){
+  if(!s) return null;
+  const m = /^(\d{2})\.(\d{2})\.(\d{4})$/.exec(s);
+  if(m) return new Date(`${m[3]}-${m[2]}-${m[1]}T00:00:00`);
+  const d=new Date(s); return isNaN(d)? null : d;
+}
+const fmtDate = s => { const d=parseDate(s); return d? d.toLocaleDateString('tr-TR') : (s||''); };
+const up = s => (s||'').toLocaleUpperCase('tr-TR');
 
-  // --- SMS metni ---
-  function buildSMS(p){
-    const adSoyad = up(`${p.Vorname} ${p.Name}`.trim());
-    if (curRules.mode === 'combined'){ // A1/A2
-      const t = curRules.total || {};
-      const totalTxt = `${toTR(p.Gesamt)} ( Gereken minimum sertifika puanı: ${t.min} / ${t.max} )`;
-      return `Sayın ${adSoyad} Kurumumuzda girdiğiniz sınav sonucunuz Telc tarafından kurumumuza iletildi.  Toplam Puanınız : ${totalTxt} .Sertifikanız veya sınav sonuç belgeniz Almanya Telc Merkezinden kargoya verilmiştir. 1 hafta - 10 gün içerisinde bizlere ulaşacaktır. Belgeniz bizlere ulaşana kadar herhangi bir yazılı sonuç belgesi verilememektedir. Sertifikanız veya sınav sonuç belgeniz bizlere ulaştığında sizlere bilgilendirme yapılacaktır. Saygılarımızla..`;
-    } else { // B1/B2/C1
-      const w=curRules.written||{}, m=curRules.spoken||{};
-      const wTxt = `${toTR(p.GesamtS)} ( Min. ${w.min} / ${w.max} )`;
-      const mTxt = `${toTR(p.GesamtM)} ( Min. ${m.min} / ${m.max} )`;
-      return `Sayın ${adSoyad} Kurumumuzda girdiğiniz sınav sonucunuz Telc tarafından kurumumuza iletildi.     
-Yazılı Bölüm (Schriftlicher Teil) : ${wTxt} Sözlü Bölüm (Mündlischer Teil) : ${mTxt} .Sertifikanız veya sınav sonuç belgeniz Almanya Telc Merkezinden kargoya verilmiştir. 1 hafta - 10 gün içerisinde bizlere ulaşacaktır. Belgeniz bizlere ulaşana kadar herhangi bir yazılı sonuç belgesi verilememektedir. Sertifikanız veya sınav sonuç belgeniz bizlere ulaştığında sizlere bilgilendirme yapılacaktır. Saygılarımızla..`;
-    }
-  }
-
-  // --- TXT blok ---
-  function personBlock(p){
-    const L=[];
-    L.push(`${(p.Vorname||'').trim()} ${(p.Name||'').trim()}`.trim().toUpperCase());
-    L.push(`Katılımcı NO: ${p.Bogennummer||''}`);
-    L.push(`Doğum tarihi: ${fmtDate(p.Geburtsdatum)}`);
-    if (curRules.mode === 'combined'){ // A1/A2
-      const t=curRules.total||{};
-      L.push(`Toplam Puanınız: ${toTR(p.Gesamt)} ( Gereken minimum sertifika puanı: ${t.min} / ${t.max} )`);
-    } else { // B1/B2/C1
-      const w=curRules.written||{}, m=curRules.spoken||{};
-      L.push(`Yazılı sınav: ${toTR(p.GesamtS)} / ${w.max} (Min ${w.min})`);
-      L.push(`Sözlü: ${toTR(p.GesamtM)} / ${m.max} (Min ${m.min})`);
-    }
-    L.push('');
-    L.push('Detay puanlama');
-    const schrift = [
-      ['Leseverstehen (Okuma Anlama)', p.TeilS?.[0]],
-      ['Sprachbausteine (Dil Bilgisi)', p.TeilS?.[1]],
-      ['Hörverstehen (Dinleme Anlama)', p.TeilS?.[2]],
-      ['Schriftlicher Ausdruck (Yazılı İfade)', p.TeilS?.[3]],
-    ];
-    schrift.forEach(([lab,val])=>{ if(val!=null && !Number.isNaN(val)) L.push(`${lab}: ${toTR(val)}`); });
-    const muendlich = [
-      ['Sözlü Sınav 1. Kısım', p.TeilM?.[0]],
-      ['Sözlü Sınav 2. Kısım', p.TeilM?.[1]],
-      ['Sözlü Sınav 3. Kısım', p.TeilM?.[2]],
-    ];
-    muendlich.forEach(([lab,val])=>{ if(val!=null && !Number.isNaN(val)) L.push(`${lab}: ${toTR(val)}`); });
-    L.push('');
-    L.push('SMS:');
-    L.push(buildSMS(p));
-    return L.join('\n');
-  }
-
-  // --- Dosya seçildiğinde ---
-  $('#file').addEventListener('change', async (e)=>{
-    const files=[...e.target.files];
-    const level = normLevel(levelInput.value);
-    if(!level){ alert('Önce seviye girin (A1/A2/B1/B2/C1)'); return; }
-    if(files.length===0){ statusEl.textContent='Dosya seçilmedi.'; return; }
-
-    curRules = rulesOf(level);
-
-    let dates=[], blocks=[];
-    for(const f of files){
-      const xml = await f.text();
-      const people = parseXML(xml);
-      people.forEach(p => { if(p._rawDate) dates.push(p._rawDate); blocks.push(personBlock(p)); });
-    }
-
-    // En güncel tarih
-    let last=null; dates.forEach(s=>{ const d=parseDate(s); if(d && (!last || d>last)) last=d; });
-    const lastText = last ? last.toLocaleDateString('tr-TR') : '';
-
-    const header = `SINAV TARİHİ: ${lastText}\nSINAV SEVİYESİ: ${level}\n\n`;
-    const content = header + blocks.join('\n\n__________________\n\n');
-
-    const rawName = `${lastText} Seviye ${level} Sınav sonucu.txt`;
-    const filename = rawName.replace(/[\\/:*?"<>|]/g,'-'); // dosya adı güvenli
-
-    downloadText(filename, content);
-    statusEl.textContent = `${files.length} XML işlendi • ${blocks.length} aday tek dosyada indirildi • Son sınav tarihi: ${lastText} • Seviye: ${level}`;
-
-    e.target.value=''; // tekrar seçim için
+// -------- XML -> adaylar --------
+function parseXML(text){
+  const doc = new DOMParser().parseFromString(text,'text/xml');
+  const rows = [...doc.getElementsByTagName('Table')];
+  return rows.map(r=>{
+    const g = t => (r.getElementsByTagName(t)[0]?.textContent ?? '').trim();
+    return {
+      Name: g('Name'), Vorname: g('Vorname'), Bogennummer: g('Bogennummer'), Note: g('Note'),
+      Pruefungsdatum: g('Pruefungsdatum'), _rawDate: g('Pruefungsdatum'),
+      Geburtsdatum: g('Geburtsdatum')||g('Geburtstag')||'',
+      TeilS: [g('Teil1_schriftlich'),g('Teil2_schriftlich'),g('Teil3_schriftlich'),g('Teil4_schriftlich')].map(P),
+      TeilM: [g('Teil1_muendlich'),g('Teil2_muendlich'),g('Teil3_muendlich')].map(P),
+      GesamtS: P(g('Gesamtergebnis_schriftlich')),
+      GesamtM: P(g('Gesamtergebnis_muendlich')),
+      Gesamt : P(g('Gesamtergebnis')),
+    };
   });
+}
 
-  function downloadText(filename, content){
-    const blob = new Blob([content], {type:'text/plain;charset=utf-8'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href), 1200);
+// -------- SMS (satır satır) --------
+function buildSMS(p){
+  const adSoyad = up(`${p.Vorname} ${p.Name}`.trim());
+  if (curRules.mode === 'combined'){ // A1/A2
+    const t = curRules.total || {};
+    const totalTxt = `${toTR(p.Gesamt)} ( Gereken minimum sertifika puanı: ${t.min} / ${t.max} )`;
+    return [
+      `Sayın ${adSoyad}`,
+      `telc Sınav Sonucunuz kurumumuza iletildi.`,
+      `Toplam Puanınız : ${totalTxt}`,
+      `Sertifikanız veya sınav sonuç belgeniz Almanya Telc Merkezinden kargoya verilmiştir.`,
+      `1 hafta - 10 gün içerisinde bizlere ulaşacaktır.`,
+      `Belgeniz ulaşmadan herhangi bir sonuç belgesi(detay puanlama veya pdf vb.) verilememektedir.`,
+      `Sertifikanız veya sınav sonuç belgeniz bizlere ulaştığında sizlere bilgilendirme yapılacaktır.`,
+      `Saygılarımızla..`,
+    ].join(NL);
+  } else { // B1/B2/C1
+    const w=curRules.written||{}, m=curRules.spoken||{};
+    const wTxt = `${toTR(p.GesamtS)} ( Min. ${w.min} / ${w.max} )`;
+    const mTxt = `${toTR(p.GesamtM)} ( Min. ${m.min} / ${m.max} )`;
+    return [
+      `Sayın ${adSoyad}`,
+      `telc Sınav Sonucunuz kurumumuza iletildi.`,
+      `Yazılı Bölüm (Schriftlicher Teil) : ${wTxt}`,
+      `Sözlü Bölüm (Mündlischer Teil) : ${mTxt}`,
+      `Sertifikanız veya sınav sonuç belgeniz Almanya Telc Merkezinden kargoya verilmiştir.`,
+      `1 hafta - 10 gün içerisinde bizlere ulaşacaktır.`,
+      `Belgeniz ulaşmadan herhangi bir sonuç belgesi(detay puanlama veya pdf vb.) verilememektedir.`,
+      `Sertifikanız veya sınav sonuç belgeniz bizlere ulaştığında sizlere bilgilendirme yapılacaktır.`,
+      `Saygılarımızla..`,
+    ].join(NL);
   }
+}
+
+// -------- TXT blok --------
+function personBlock(p){
+  const L=[];
+  L.push(`${(p.Vorname||'').trim()} ${(p.Name||'').trim()}`.trim().toUpperCase());
+  L.push(`Katılımcı NO: ${p.Bogennummer||''}`);
+  L.push(`Doğum tarihi: ${fmtDate(p.Geburtsdatum)}`);
+  if (curRules.mode === 'combined'){ // A1/A2
+    const t=curRules.total||{};
+    L.push(`Toplam Puanınız: ${toTR(p.Gesamt)} ( Gereken minimum sertifika puanı: ${t.min} / ${t.max} )`);
+  } else { // B1/B2/C1
+    const w=curRules.written||{}, m=curRules.spoken||{};
+    L.push(`Yazılı sınav: ${toTR(p.GesamtS)} / ${w.max} (Min ${w.min})`);
+    L.push(`Sözlü: ${toTR(p.GesamtM)} / ${m.max} (Min ${m.min})`);
+  }
+  L.push('');
+  L.push('Detay puanlama');
+  const schrift = [
+    ['Leseverstehen (Okuma Anlama)', p.TeilS?.[0]],
+    ['Sprachbausteine (Dil Bilgisi)', p.TeilS?.[1]],
+    ['Hörverstehen (Dinleme Anlama)', p.TeilS?.[2]],
+    ['Schriftlicher Ausdruck (Yazılı İfade)', p.TeilS?.[3]],
+  ];
+  schrift.forEach(([lab,val])=>{ if(val!=null && !Number.isNaN(val)) L.push(`${lab}: ${toTR(val)}`); });
+  const muendlich = [
+    ['Sözlü Sınav 1. Kısım', p.TeilM?.[0]],
+    ['Sözlü Sınav 2. Kısım', p.TeilM?.[1]],
+    ['Sözlü Sınav 3. Kısım', p.TeilM?.[2]],
+  ];
+  muendlich.forEach(([lab,val])=>{ if(val!=null && !Number.isNaN(val)) L.push(`${lab}: ${toTR(val)}`); });
+  L.push('');
+  L.push('SMS:');
+  L.push(buildSMS(p));
+  return L.join('\n');
+}
+
+// -------- Dosya seçildi --------
+$('#file').addEventListener('change', async (e)=>{
+  const files=[...e.target.files];
+  const level = normLevel(levelInput.value);
+  if(!level){ alert('Önce seviye girin (A1/A2/B1/B2/C1)'); return; }
+  if(files.length===0){ statusEl.textContent='Dosya seçilmedi.'; return; }
+
+  curRules = rulesOf(level);
+
+  let dates=[], blocks=[];
+  for(const f of files){
+    const xml = await f.text();
+    const people = parseXML(xml);
+    people.forEach(p => { if(p._rawDate) dates.push(p._rawDate); blocks.push(personBlock(p)); });
+  }
+
+  // en güncel tarih
+  let last=null; dates.forEach(s=>{ const d=parseDate(s); if(d && (!last || d>last)) last=d; });
+  const lastText = last ? last.toLocaleDateString('tr-TR') : '';
+
+  const header = `SINAV TARİHİ: ${lastText}\nSINAV SEVİYESİ: ${level}\n\n`;
+  const content = header + blocks.join('\n\n__________________\n\n');
+
+  const rawName = `${lastText} Seviye ${level} Sınav sonucu.txt`;
+  const filename = rawName.replace(/[\\/:*?"<>|]/g,'-');
+
+  // UTF-8 BOM + CRLF ile indir
+  downloadText(filename, content);
+  statusEl.textContent = `${files.length} XML işlendi • ${blocks.length} aday tek dosyada indirildi • Son sınav tarihi: ${lastText} • Seviye: ${level}`;
+  e.target.value=''; // tekrar seçim için
+});
+
+// -------- UTF-8 BOM + CRLF indirme --------
+function downloadText(filename, content){
+  const BOM = "\uFEFF";
+  const ensureCRLF = s => s.replace(/\r?\n/g, '\r\n');
+  const blob = new Blob([BOM + ensureCRLF(content)], {type:'text/plain;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1200);
+}
 })();
 </script>
 </body>
