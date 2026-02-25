@@ -90,14 +90,17 @@ function buildSMS(p){
     const t = curRules.total || {};
     const totalTxt = `${toTR(p.Gesamt)} ( Gereken minimum sertifika puanı: ${t.min} / ${t.max} )`;
     return [
+      `
+      `telc Sınav Sonucunuz Hakkında Bilgilendirme`,
       `Sayın ${adSoyad}`,
       `telc Sınav Sonucunuz kurumumuza iletildi.`,
       `Toplam Puanınız : ${totalTxt}`,
-      `Sertifikanız veya sınav sonuç belgeniz Almanya Telc Merkezinden kargoya verilmiştir.`,
-      `1 hafta - 10 gün içerisinde bizlere ulaşacaktır.`,
-      `Belgeniz ulaşmadan herhangi bir sonuç belgesi(detay puanlama veya pdf vb.) verilememektedir.`,
-      `Sertifikanız veya sınav sonuç belgeniz bizlere ulaştığında sizlere bilgilendirme yapılacaktır.`,
-      `Saygılarımızla..`,
+      `telc sınav sonuçları artık fiziksel belge gönderimi yerine dijital sistem üzerinden açıklanmaktadır. 
+      .`,
+      `Detaylı sonuç belgesi ve resmi sınav evrakları telc sistemi üzerinden tarafınıza ulaştığında sizlere telc tarafından mail yolu ile bilgilendirme yapılacaktır.`,
+      `Belge ulaşmadan detay puanlama veya PDF sonuç paylaşımı yapılamamaktadır..`,
+      `Anlayışınız için teşekkür eder, iyi günler dileriz.
+  Saygılarımızla..`,
     ].join(NL);
   } else { // B1/B2/C1
     const w=curRules.written||{}, m=curRules.spoken||{};
